@@ -20,7 +20,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main, tech/mobile-e2e]
+    branches: [tech/mobile-e2e]
   workflow_dispatch:
 
 # Least-privilege GITHUB_TOKEN: this workflow only reads the repo source. It

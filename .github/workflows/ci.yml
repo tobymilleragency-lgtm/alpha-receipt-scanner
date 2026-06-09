@@ -41,6 +41,8 @@ jobs:
     if: needs.detect-changes.outputs.api == 'true'
     runs-on: ubuntu-latest
     container: golang:1.24-trixie
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - name: Mark workspace as safe directory
@@ -49,18 +51,19 @@ jobs:
         run: sh set-up-dependencies.sh
         working-directory: ./api
       - name: Build
-        run: go build -v ./...
+        run: go build -buildvcs=false -v ./...
         working-directory: ./api
       - name: Test
-        run: go test -coverprofile=coverage.out -covermode=atomic -v ./...
+        run: go test -buildvcs=false -coverprofile=coverage.out -covermode=atomic -v ./...
         working-directory: ./api
       - name: Upload Coverage Report to Codecov
+        if: env.CODECOV_TOKEN != ''
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./api/coverage.out
           flags: api
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           verbose: true
       - name: Test imap client
         run: |
@@ -73,6 +76,7 @@ jobs:
     if: needs.detect-changes.outputs.desktop == 'true'
     runs-on: ubuntu-latest
     env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       GH_PACKAGE_READ_TOKEN_DESKTOP: ${{ secrets.GH_PACKAGE_READ_TOKEN_DESKTOP }}
     steps:
       - uses: actions/checkout@v4
@@ -93,18 +97,20 @@ jobs:
           output: both
           badge: true
       - name: Upload coverage to Codecov
+        if: env.CODECOV_TOKEN != ''
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./desktop/coverage/receipt-wrangler-desktop/cobertura-coverage.xml
           flags: desktop
-          fail_ci_if_error: true
+          fail_ci_if_error: false
 
   build-docker-arm64:
     needs: [detect-changes, test-api, test-desktop]
     if: |
       always() &&
       needs.detect-changes.outputs.docker == 'true' &&
+      github.repository == 'Receipt-Wrangler/receipt-wrangler' &&
       !contains(needs.*.result, 'failure') &&
       !contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-latest
@@ -137,6 +143,7 @@ jobs:
     if: |
       always() &&
       needs.detect-changes.outputs.docker == 'true' &&
+      github.repository == 'Receipt-Wrangler/receipt-wrangler' &&
       !contains(needs.*.result, 'failure') &&
       !contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-latest
@@ -168,6 +175,7 @@ jobs:
     needs: [build-docker-arm64, build-docker-amd64]
     if: |
       always() &&
+      github.repository == 'Receipt-Wrangler/receipt-wrangler' &&
       needs.build-docker-arm64.result == 'success' &&
       needs.build-docker-amd64.result == 'success'
     runs-on: ubuntu-latest

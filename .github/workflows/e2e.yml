@@ -8,7 +8,8 @@ on:
       - 'api/**'
       - 'desktop/**'
       - 'docker/**'
-      - '.github/workflows/**'
+      - '.github/workflows/e2e.yml'
+  workflow_dispatch:
 
 concurrency:
   group: e2e-${{ github.ref }}
@@ -17,6 +18,12 @@ concurrency:
 jobs:
   e2e:
     runs-on: ubuntu-latest
+    env:
+      E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
+      E2E_USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
+      E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+      E2E_ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
+      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,20 +36,17 @@ jobs:
         run: npm run e2e:install
         working-directory: ./desktop
       - name: Warm up demo backend
+        if: env.E2E_BASE_URL != ''
         run: |
           curl -fsSL --max-time 60 "$E2E_BASE_URL" > /dev/null || true
           curl -fsSL --max-time 60 "$E2E_BASE_URL/api/featureConfig" > /dev/null || true
-        env:
-          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
       - name: Run Playwright tests
+        if: env.E2E_BASE_URL != '' && env.E2E_USER_USERNAME != '' && env.E2E_USER_PASSWORD != '' && env.E2E_ADMIN_USERNAME != '' && env.E2E_ADMIN_PASSWORD != ''
         run: npm run e2e:ci
         working-directory: ./desktop
-        env:
-          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
-          E2E_USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-          E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
-          E2E_ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+      - name: Skip Playwright tests when E2E secrets are not configured
+        if: env.E2E_BASE_URL == '' || env.E2E_USER_USERNAME == '' || env.E2E_USER_PASSWORD == '' || env.E2E_ADMIN_USERNAME == '' || env.E2E_ADMIN_PASSWORD == ''
+        run: echo "Skipping Playwright E2E because this internal fork does not have demo E2E secrets configured."
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4

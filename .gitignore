@@ -1,1 +1,4 @@
 .claude
+.vercel
+.DS_Store
+dist/

@@ -1,0 +1,5 @@
+{
+  "outputDirectory": "vercel-public",
+  "cleanUrls": true,
+  "trailingSlash": false
+}

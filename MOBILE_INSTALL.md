@@ -28,8 +28,8 @@ Source build output:
 Build verification:
 
 ```text
-size: 164608037 bytes
-sha256: dc7381897b642fd687261b8e06030d0058caded78b71267d49790b546a454317
+size: 167773737 bytes
+sha256: 3f56a27023e0b0d21e98188b3d1bf58d4a52a8db4fda1dffb96a830eefc08541
 ```
 
 ## Fixes applied
@@ -37,7 +37,9 @@ sha256: dc7381897b642fd687261b8e06030d0058caded78b71267d49790b546a454317
 - Changed Android app label to `Alpha Receipt Scanner`.
 - Allowed cleartext HTTP traffic so the phone can talk to the local LAN server at `http://192.168.12.209:18080` during testing.
 - Set the app default home-server URL to `http://192.168.12.209:18080`.
-- Removed the startup token-refresh loading gate that could keep the app stuck before the login/home-server screen.
+- Removed the startup token-refresh loading gate from public routes so the installed app paints the login/home-server screen immediately instead of opening to a blank router frame.
+- Added a boot smoke test that fails if first launch renders blank instead of the server URL screen.
+- Added a visible router error fallback so bad route state shows an error screen instead of silently blanking.
 - Set Android NDK to `28.2.13676358`, matching the scanner/integration-test dependency requirement.
 - Added `build-mobile-apk.sh` so the APK can be rebuilt cleanly from Docker and copied to `dist/`.
 

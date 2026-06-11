@@ -10,9 +10,12 @@ class GlobalSharedPreferences {
   }
 
   static SharedPreferences get instance {
-    if (_instance == null) {
-      throw Exception('GlobalPreferences is not initialized');
+    final current = _instance;
+    if (current == null) {
+      throw StateError(
+        'GlobalSharedPreferences is not initialized. Call GlobalSharedPreferences.initialize() before building the app.',
+      );
     }
-    return _instance as SharedPreferences;
+    return current;
   }
 }

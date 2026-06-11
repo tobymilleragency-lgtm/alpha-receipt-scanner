@@ -77,6 +77,18 @@ Widget buildApp() {
 
 GoRouter _buildAppRouter() {
   return GoRouter(
+    initialLocation: '/',
+    errorBuilder: (context, state) => ScreenWrapper(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            'Alpha Receipt Scanner could not open this screen. ${state.error ?? ''}',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    ),
     routes: [
       GoRoute(
         path: '/',

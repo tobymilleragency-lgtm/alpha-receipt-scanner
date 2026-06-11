@@ -1,0 +1,19 @@
+{
+  "name": "Alpha Receipt Scanner",
+  "short_name": "Alpha Receipts",
+  "description": "Offline-first receipt capture for Alpha Construction Pros.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#080b12",
+  "theme_color": "#f8b84e",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

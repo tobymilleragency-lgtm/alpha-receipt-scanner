@@ -2,70 +2,112 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Alpha Receipt Scanner</title>
-  <meta name="description" content="Alpha Construction Pros receipt scanner install and phone setup page." />
+  <meta name="description" content="Offline-first receipt scanner for Alpha Construction Pros. Add receipts from the phone without connecting to a backend server." />
+  <meta name="theme-color" content="#f8b84e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Alpha Receipts" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <style>
-    :root { color-scheme: dark; --bg:#080b10; --card:#111827; --muted:#9ca3af; --text:#f9fafb; --gold:#f59e0b; --green:#22c55e; --line:#263244; }
-    * { box-sizing:border-box; }
-    body { margin:0; min-height:100vh; font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:radial-gradient(circle at top, #1f2937 0, #080b10 48%); color:var(--text); }
-    main { width:min(920px, 100%); margin:0 auto; padding:32px 18px 48px; }
-    .badge { display:inline-flex; gap:8px; align-items:center; padding:8px 12px; border:1px solid var(--line); border-radius:999px; background:rgba(17,24,39,.76); color:var(--muted); font-size:14px; }
-    h1 { font-size:clamp(34px, 8vw, 68px); line-height:.95; letter-spacing:-.05em; margin:28px 0 16px; }
-    .lead { color:#d1d5db; font-size:clamp(18px, 4vw, 24px); line-height:1.35; max-width:760px; margin:0 0 28px; }
-    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; margin-top:22px; }
-    .card { border:1px solid var(--line); border-radius:24px; background:linear-gradient(180deg, rgba(17,24,39,.94), rgba(3,7,18,.94)); padding:22px; box-shadow:0 20px 80px rgba(0,0,0,.35); }
-    .card h2 { margin:0 0 10px; font-size:22px; }
-    .card p, li { color:#d1d5db; line-height:1.55; }
-    a.button { display:flex; justify-content:center; align-items:center; text-align:center; min-height:56px; padding:16px 20px; border-radius:16px; background:var(--gold); color:#111827; font-weight:900; text-decoration:none; margin:16px 0 10px; }
-    a.secondary { background:#172033; color:var(--text); border:1px solid var(--line); }
-    code { display:inline-block; max-width:100%; overflow:auto; padding:4px 7px; border-radius:8px; background:#030712; border:1px solid #1f2937; color:#fde68a; }
-    .status { border-color:rgba(34,197,94,.45); }
-    .status strong { color:var(--green); }
-    ol { padding-left:20px; }
-    footer { color:var(--muted); margin-top:28px; font-size:13px; }
+    :root { color-scheme: dark; --bg:#080b12; --card:#121826; --card2:#0d1320; --text:#f6f8fb; --muted:#aab4c3; --gold:#f8b84e; --line:#263044; --green:#32d583; --red:#fb7185; }
+    * { box-sizing: border-box; }
+    html, body { margin:0; min-height:100%; max-width:100%; overflow-x:hidden; }
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: radial-gradient(circle at top, #172036, var(--bg) 50%); color:var(--text); }
+    main { width:min(900px, 100%); margin:0 auto; padding: max(20px, env(safe-area-inset-top)) 14px max(40px, env(safe-area-inset-bottom)); }
+    .hero { display:grid; gap:14px; margin-bottom:18px; }
+    .badge { display:inline-flex; width:max-content; max-width:100%; gap:8px; align-items:center; padding:7px 11px; border:1px solid var(--line); border-radius:999px; color:var(--muted); background:rgba(255,255,255,.04); font-size:13px; }
+    h1 { font-size:clamp(32px, 10vw, 62px); line-height:.96; margin:0; letter-spacing:-.05em; }
+    p { color:var(--muted); line-height:1.5; }
+    .status { border:1px solid rgba(50,213,131,.35); background:rgba(50,213,131,.08); color:#d1fae5; padding:12px 14px; border-radius:16px; margin:0; }
+    .grid { display:grid; grid-template-columns:1fr; gap:14px; }
+    @media (min-width: 760px) { .grid { grid-template-columns: 1fr 1fr; align-items:start; } }
+    .card { background:linear-gradient(180deg, rgba(18,24,38,.94), rgba(8,11,18,.96)); border:1px solid var(--line); border-radius:24px; padding:18px; box-shadow:0 24px 90px rgba(0,0,0,.34); }
+    .card h2 { margin:0 0 12px; font-size:22px; }
+    label { display:block; font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:14px 0 6px; }
+    input, select, textarea, button { width:100%; font:inherit; }
+    input, select, textarea { background:#070b13; color:var(--text); border:1px solid var(--line); border-radius:14px; padding:13px 14px; outline:none; }
+    input:focus, select:focus, textarea:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(248,184,78,.12); }
+    button { border:0; border-radius:16px; min-height:52px; font-weight:900; cursor:pointer; }
+    .primary { background:linear-gradient(135deg, #ffd37a, var(--gold)); color:#111827; }
+    .secondary { background:#172033; color:var(--text); border:1px solid var(--line); }
+    .danger { background:rgba(251,113,133,.13); color:#fecdd3; border:1px solid rgba(251,113,133,.35); }
+    .actions { display:grid; grid-template-columns:1fr; gap:10px; margin-top:14px; }
+    @media (min-width: 520px) { .actions { grid-template-columns:1fr 1fr; } }
+    .stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+    .stat { background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:18px; padding:14px; }
+    .stat strong { display:block; font-size:28px; color:var(--gold); }
+    #image-preview { width:100%; max-height:320px; object-fit:contain; border:1px solid var(--line); border-radius:18px; margin-top:12px; background:#030712; }
+    .receipt-card { display:grid; grid-template-columns:92px 1fr; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+    .receipt-card:last-child { border-bottom:0; }
+    .receipt-card img, .no-photo { width:92px; height:92px; border-radius:14px; object-fit:cover; background:#050913; border:1px solid var(--line); }
+    .no-photo { display:grid; place-items:center; color:var(--muted); font-size:12px; text-align:center; padding:8px; }
+    .row { display:flex; justify-content:space-between; gap:8px; align-items:start; }
+    .meta, .empty { color:var(--muted); font-size:14px; }
+    .delete { width:auto; min-height:34px; margin-top:8px; padding:8px 10px; background:rgba(251,113,133,.12); color:#fecdd3; border:1px solid rgba(251,113,133,.28); }
+    .help { font-size:14px; color:#d7dfeb; background:rgba(248,184,78,.08); border-left:4px solid var(--gold); padding:12px; border-radius:14px; }
   </style>
 </head>
 <body>
-  <main>
-    <div class="badge">Alpha Construction Pros · receipt scanner phone setup</div>
+<main>
+  <section class="hero">
+    <span class="badge">Alpha Construction Pros · phone receipt capture</span>
     <h1>Alpha Receipt Scanner</h1>
-    <p class="lead">Install the Android scanner, point it at Toby’s local Alpha receipt server, then scan gas, food, supplies, and material receipts from the phone.</p>
+    <p class="status" id="sync-status">Loading scanner...</p>
+    <p>This is now a Vercel-hosted installable web app. It saves receipts on the phone first. No setup screen, no LAN URL, no tunnel required to add receipts at a gas station.</p>
+    <button class="secondary" id="install-app" hidden type="button">Install / Add to Home Screen</button>
+  </section>
 
-    <section class="grid">
-      <div class="card status">
-        <h2>1. Download Android app</h2>
-        <p>Tap this from the Android phone. If Android warns you, allow install from browser for this internal Alpha app.</p>
-        <a class="button" href="https://github.com/tobymilleragency-lgtm/alpha-receipt-scanner/releases/latest/download/alpha-receipt-scanner-debug.apk">Download APK</a>
-        <p><strong>Build verified:</strong> SHA-256 starts with <code>7d7cf92192f8</code>.</p>
-      </div>
+  <section class="grid">
+    <form class="card" id="receipt-form">
+      <h2>Add receipt</h2>
+      <label for="receipt-image">Receipt photo</label>
+      <input id="receipt-image" name="image" type="file" accept="image/*" capture="environment" />
+      <img id="image-preview" alt="Receipt preview" hidden />
 
-      <div class="card">
-        <h2>2. Server URL</h2>
-        <p>When the app asks for the home server, use this while the phone is on the same Wi‑Fi as Toby’s workstation:</p>
-        <p><code>http://192.168.12.209:18080</code></p>
-        <p>This is a local server. Vercel is only the public install page, not the receipt database/API.</p>
-      </div>
+      <label for="vendor">Vendor / store</label>
+      <input id="vendor" name="vendor" placeholder="Casey's, Lowe's, Home Depot" required />
 
-      <div class="card">
-        <h2>3. Login</h2>
-        <p>Use the test account already created on the local Alpha server:</p>
-        <p><code>username: toby</code></p>
-        <p><code>password: alpha123</code></p>
-      </div>
+      <label for="amount">Amount</label>
+      <input id="amount" name="amount" type="number" step="0.01" min="0" inputmode="decimal" placeholder="23.41" required />
 
-      <div class="card">
-        <h2>4. Scan path</h2>
-        <ol>
-          <li>Open app and log in.</li>
-          <li>Use the add / plus menu.</li>
-          <li>Tap <strong>Quick Scan</strong> if shown.</li>
-          <li>Or open a receipt and use <strong>Upload from Camera</strong>.</li>
-        </ol>
+      <label for="receipt-date">Date</label>
+      <input id="receipt-date" name="date" type="date" required />
+
+      <label for="category">Category</label>
+      <select id="category" name="category">
+        <option>Fuel</option>
+        <option>Materials</option>
+        <option>Tools</option>
+        <option>Food</option>
+        <option>Vehicle</option>
+        <option>Office</option>
+        <option>Other</option>
+      </select>
+
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="notes" rows="3" placeholder="Job, customer, material, truck, or reason"></textarea>
+
+      <button class="primary" type="submit">Save Receipt</button>
+    </form>
+
+    <section class="card">
+      <h2>Saved on this phone</h2>
+      <div class="stats">
+        <div class="stat"><span>Receipts</span><strong id="receipt-count">0</strong></div>
+        <div class="stat"><span>Total</span><strong id="receipt-total">$0.00</strong></div>
       </div>
+      <p class="help">Use Export CSV anytime. Photos stay in this browser’s local storage. Do not clear site data until exported.</p>
+      <div class="actions">
+        <button class="secondary" id="export-csv" type="button">Export CSV</button>
+        <button class="danger" id="clear-all" type="button">Clear Phone Data</button>
+      </div>
+      <div id="receipt-list" aria-live="polite"></div>
     </section>
-
-    <footer>Internal Alpha receipt scanner build based on Receipt Wrangler. Backend is self-hosted for receipt/file control.</footer>
-  </main>
+  </section>
+</main>
+<script src="/app.js" defer></script>
 </body>
 </html>

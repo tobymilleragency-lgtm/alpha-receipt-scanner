@@ -6,7 +6,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:receipt_wrangler_mobile/main.dart';
 
 void main() {
-  testWidgets('first launch renders the server URL screen instead of a blank app', (tester) async {
+  testWidgets(
+      'first launch renders the server URL screen instead of a blank app',
+      (tester) async {
     SharedPreferences.setMockInitialValues({});
     await GlobalSharedPreferences.initialize();
 

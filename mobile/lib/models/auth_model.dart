@@ -22,10 +22,34 @@ class AuthModel extends ChangeNotifier {
   final String _jwtKey = "jwt";
 
   final _basePathKey = "basePath";
+  static const String defaultPublicBasePath =
+      "https://methodology-discs-lenders-charleston.trycloudflare.com";
 
-  String get basePath =>
-      GlobalSharedPreferences.instance.getString(_basePathKey) ??
-      "http://192.168.12.209:18080";
+  String get basePath {
+    final savedBasePath =
+        GlobalSharedPreferences.instance.getString(_basePathKey);
+    if (savedBasePath == null || _isStaleLocalBasePath(savedBasePath)) {
+      return defaultPublicBasePath;
+    }
+    return savedBasePath;
+  }
+
+  bool _isStaleLocalBasePath(String value) {
+    final uri = Uri.tryParse(value);
+    final host = uri?.host.toLowerCase();
+    return host == null ||
+        host == "127.0.0.1" ||
+        host == "localhost" ||
+        host.startsWith("192.168.") ||
+        host.startsWith("10.") ||
+        host.startsWith("172.16.") ||
+        host.startsWith("172.17.") ||
+        host.startsWith("172.18.") ||
+        host.startsWith("172.19.") ||
+        host.startsWith("172.2") ||
+        host.startsWith("172.30.") ||
+        host.startsWith("172.31.");
+  }
 
   api.FeatureConfig _featureConfig = (api.FeatureConfigBuilder()
         ..aiPoweredReceipts = false

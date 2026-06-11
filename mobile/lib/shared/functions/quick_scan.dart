@@ -37,13 +37,15 @@ Widget _getUploadIcon(
                 var uploadedImages = await scanImagesMultiPart(100);
                 if (uploadedImages.isNotEmpty) {
                   List<QuickScanImage> quickScanImages = [];
-                  var initialQuickScanValues = _getInitialQuickScanValues(context);
+                  var initialQuickScanValues =
+                      _getInitialQuickScanValues(context);
                   for (var image in uploadedImages) {
-                    var quickScanImage = QuickScanImage.fromUploadMultipartFileData(
-                        image,
-                        initialQuickScanValues.groupId,
-                        initialQuickScanValues.paidByUserId,
-                        initialQuickScanValues.status);
+                    var quickScanImage =
+                        QuickScanImage.fromUploadMultipartFileData(
+                            image,
+                            initialQuickScanValues.groupId,
+                            initialQuickScanValues.paidByUserId,
+                            initialQuickScanValues.status);
                     quickScanImages.add(quickScanImage);
                   }
                   imageSubject.add(imageSubject.value + quickScanImages);
@@ -71,13 +73,15 @@ Widget _getGalleryUploadImage(
                 var uploadedImages = await getGalleryImages();
                 if (uploadedImages.isNotEmpty) {
                   List<QuickScanImage> quickScanImages = [];
-                  var initialQuickScanValues = _getInitialQuickScanValues(context);
+                  var initialQuickScanValues =
+                      _getInitialQuickScanValues(context);
                   for (var image in uploadedImages) {
-                    var quickScanImage = QuickScanImage.fromUploadMultipartFileData(
-                        image,
-                        initialQuickScanValues.groupId,
-                        initialQuickScanValues.paidByUserId,
-                        initialQuickScanValues.status);
+                    var quickScanImage =
+                        QuickScanImage.fromUploadMultipartFileData(
+                            image,
+                            initialQuickScanValues.groupId,
+                            initialQuickScanValues.paidByUserId,
+                            initialQuickScanValues.status);
                     quickScanImages.add(quickScanImage);
                   }
 
@@ -114,19 +118,18 @@ Widget _getSubmitButton(
 
       return BottomSubmitButton(
         onPressed: () async {
-          final loadingModel = Provider.of<LoadingModel>(context, listen: false);
-          await _submitQuickScan(context, imageSubject.value, loadingModel, isCompletedSubject);
+          final loadingModel =
+              Provider.of<LoadingModel>(context, listen: false);
+          await _submitQuickScan(
+              context, imageSubject.value, loadingModel, isCompletedSubject);
         },
       );
     },
   );
 }
 
-Future<void> _submitQuickScan(
-    BuildContext context,
-    List<QuickScanImage> images,
-    LoadingModel loadingModel,
-    BehaviorSubject<bool> isCompletedSubject) async {
+Future<void> _submitQuickScan(BuildContext context, List<QuickScanImage> images,
+    LoadingModel loadingModel, BehaviorSubject<bool> isCompletedSubject) async {
   List<int> groupIds = [];
   List<int> paidByUserIds = [];
   List<api.ReceiptStatus> statuses = [];
@@ -168,18 +171,27 @@ Future<void> _submitQuickScan(
   loadingModel.setIsLoading(true);
 
   try {
-    await OpenApiClient.client.getReceiptApi().quickScanReceipt(
-        files: files.toBuiltList(),
-        groupIds: groupIds.toBuiltList(),
-        paidByUserIds: paidByUserIds.toBuiltList(),
-        statuses: statuses.toBuiltList());
+    if (hasAiPoweredReceipts(context)) {
+      await OpenApiClient.client.getReceiptApi().quickScanReceipt(
+          files: files.toBuiltList(),
+          groupIds: groupIds.toBuiltList(),
+          paidByUserIds: paidByUserIds.toBuiltList(),
+          statuses: statuses.toBuiltList());
 
-    var imageWord = images.length > 1 ? "images" : "image";
+      var imageWord = images.length > 1 ? "images" : "image";
 
-    showSuccessSnackbar(
-      context,
-      "Successfully queued $imageWord for processing!",
-    );
+      showSuccessSnackbar(
+        context,
+        "Successfully queued $imageWord for processing!",
+      );
+    } else {
+      await _createReceiptsFromScans(images);
+      var receiptWord = images.length > 1 ? "receipts" : "receipt";
+      showSuccessSnackbar(
+        context,
+        "Successfully saved $receiptWord with scanned images!",
+      );
+    }
 
     isCompletedSubject.add(true);
   } catch (e) {
@@ -190,6 +202,35 @@ Future<void> _submitQuickScan(
   }
 
   return;
+}
+
+Future<void> _createReceiptsFromScans(List<QuickScanImage> images) async {
+  for (var image in images) {
+    final now = DateTime.now().toUtc();
+    final receiptResponse = await OpenApiClient.client
+        .getReceiptApi()
+        .createReceipt(
+            upsertReceiptCommand: (api.UpsertReceiptCommandBuilder()
+                  ..name =
+                      "Scanned receipt ${now.toLocal().toString().split('.').first}"
+                  ..amount = "0"
+                  ..date = now.toIso8601String()
+                  ..groupId = image.groupId as int
+                  ..paidByUserId = image.paidByUserId as int
+                  ..status = image.status as api.ReceiptStatus
+                  ..categories = ListBuilder<api.UpsertCategoryCommand>()
+                  ..tags = ListBuilder<api.UpsertTagCommand>()
+                  ..receiptItems = ListBuilder<api.UpsertItemCommand>()
+                  ..comments = ListBuilder<api.UpsertCommentCommand>()
+                  ..customFields =
+                      ListBuilder<api.UpsertCustomFieldValueCommand>())
+                .build());
+
+    final receiptId = receiptResponse.data!.id;
+    await OpenApiClient.client
+        .getReceiptImageApi()
+        .uploadReceiptImage(file: image.multipartFile, receiptId: receiptId);
+  }
 }
 
 Widget _getDeleteIcon(
@@ -203,7 +244,8 @@ Widget _getDeleteIcon(
         return StreamBuilder<bool>(
           stream: isCompletedSubject.stream,
           builder: (context, completedSnapshot) {
-            final isCompleted = completedSnapshot.hasData && completedSnapshot.data == true;
+            final isCompleted =
+                completedSnapshot.hasData && completedSnapshot.data == true;
 
             return DeleteButton(
               onPressed: isCompleted
@@ -224,12 +266,6 @@ Widget _getDeleteIcon(
 }
 
 showQuickScanBottomSheet(context) {
-  if (!hasAiPoweredReceipts(context)) {
-    showErrorSnackbar(context,
-        "A configured Receipt Processing Settings is required to use Quick Scan. Contact your administrator for more information.");
-    return;
-  }
-
   var infiniteScrollController = InfiniteScrollController();
   BehaviorSubject<List<QuickScanImage>> imageSubject =
       BehaviorSubject<List<QuickScanImage>>.seeded([]);
@@ -252,5 +288,6 @@ showQuickScanBottomSheet(context) {
       "Quick Scan",
       actions: actions,
       bodyPadding: EdgeInsets.zero,
-      bottomSheetWidget: _getSubmitButton(context, imageSubject, isCompletedSubject));
+      bottomSheetWidget:
+          _getSubmitButton(context, imageSubject, isCompletedSubject));
 }

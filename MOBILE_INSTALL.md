@@ -28,33 +28,28 @@ Source build output:
 Build verification:
 
 ```text
-size: 167773737 bytes
-sha256: 3f56a27023e0b0d21e98188b3d1bf58d4a52a8db4fda1dffb96a830eefc08541
+size: 167776497 bytes
+sha256: c69458f57794efca9fd982b60fe39788f87610b1793701e13b8c858dbf6cce13
 ```
 
 ## Fixes applied
 
 - Changed Android app label to `Alpha Receipt Scanner`.
-- Allowed cleartext HTTP traffic so the phone can talk to the local LAN server at `http://192.168.12.209:18080` during testing.
-- Set the app default home-server URL to `http://192.168.12.209:18080`.
+- Set the app default home-server URL to the public HTTPS backend at `https://methodology-discs-lenders-charleston.trycloudflare.com` so the scanner works off Wi-Fi / on cellular.
+- Added stale-local-URL migration: saved `127.0.0.1`, `localhost`, `192.168.x.x`, `10.x.x.x`, and private `172.16-31.x.x` server URLs are ignored and replaced with the public backend.
 - Removed the startup token-refresh loading gate from public routes so the installed app paints the login/home-server screen immediately instead of opening to a blank router frame.
 - Added a boot smoke test that fails if first launch renders blank instead of the server URL screen.
 - Added a visible router error fallback so bad route state shows an error screen instead of silently blanking.
+- Made `Scan Receipt` the first Add-menu action and allowed it to save receipt photos even when AI receipt processing is not configured.
 - Set Android NDK to `28.2.13676358`, matching the scanner/integration-test dependency requirement.
 - Added `build-mobile-apk.sh` so the APK can be rebuilt cleanly from Docker and copied to `dist/`.
 
-## Local server for phone testing
+## Public server for phone testing
 
-The local web/API server is running at:
-
-```text
-http://127.0.0.1:18080/
-```
-
-For a phone on the same Wi-Fi, `127.0.0.1` will point to the phone itself, not Toby's workstation. Use the workstation LAN IP instead:
+The mobile app now defaults to this public HTTPS backend:
 
 ```text
-http://192.168.12.209:18080
+https://methodology-discs-lenders-charleston.trycloudflare.com
 ```
 
 ## Test login
@@ -69,10 +64,8 @@ password: alpha123
 Once logged in on phone:
 
 1. Tap the add / plus menu.
-2. Use `Quick Scan` if receipt-processing/AI is enabled.
-3. Or create/open a receipt and use `Upload from Camera`.
-
-If `Quick Scan` is not visible, it is because the app only shows it when `aiPoweredReceipts` is enabled. The camera upload path still exists on receipt image/form screens.
+2. Tap `Scan Receipt`.
+3. Take the receipt photo and submit it. If AI receipt processing is configured, it queues for AI extraction; otherwise it saves a normal receipt with the scanned image attached.
 
 ## Build command
 

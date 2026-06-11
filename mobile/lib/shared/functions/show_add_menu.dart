@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:receipt_wrangler_mobile/shared/functions/quick_scan.dart';
-
-import '../../models/auth_model.dart';
 
 void showAddMenu(BuildContext context, GlobalKey addButtonKey) {
   final RenderBox renderBox =
@@ -18,19 +15,17 @@ void showAddMenu(BuildContext context, GlobalKey addButtonKey) {
     offset.dy + size.height,
   );
 
-  final authModel = Provider.of<AuthModel>(context, listen: false);
   final items = <PopupMenuItem>[
     PopupMenuItem(
       value: 0,
+      child: const Text("Scan Receipt"),
+      onTap: () => showQuickScanBottomSheet(context),
+    ),
+    PopupMenuItem(
+      value: 1,
       child: const Text("Add Manual Receipt"),
       onTap: () => context.go("/receipts/add"),
     ),
-    if (authModel.featureConfig.aiPoweredReceipts)
-      PopupMenuItem(
-        value: 1,
-        child: const Text("Quick Scan"),
-        onTap: () => showQuickScanBottomSheet(context),
-      ),
   ];
 
   showMenu(context: context, position: position, items: items);

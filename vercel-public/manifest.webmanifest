@@ -1,7 +1,7 @@
 {
   "name": "Alpha Receipt Scanner",
   "short_name": "Alpha Receipts",
-  "description": "Offline-first receipt capture for Alpha Construction Pros.",
+  "description": "Supabase-backed reimbursement receipts for Toby and Brian.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

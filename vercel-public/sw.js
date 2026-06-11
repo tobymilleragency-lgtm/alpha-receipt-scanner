@@ -1,4 +1,4 @@
-const CACHE = 'alpha-receipts-pwa-v1';
+const CACHE = 'alpha-receipts-pwa-v3';
 const ASSETS = ['/', '/index.html', '/app.js', '/manifest.webmanifest', '/icon.svg'];
 
 self.addEventListener('install', event => {
@@ -14,12 +14,15 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
   if (event.request.method !== 'GET') return;
+  if (url.pathname.startsWith('/api/')) return;
+
   event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
+    fetch(event.request).then(response => {
       const copy = response.clone();
       caches.open(CACHE).then(cache => cache.put(event.request, copy)).catch(() => {});
       return response;
-    }).catch(() => caches.match('/')))
+    }).catch(() => caches.match(event.request).then(cached => cached || caches.match('/')))
   );
 });

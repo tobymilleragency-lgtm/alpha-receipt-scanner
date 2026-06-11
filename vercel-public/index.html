@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Alpha Receipt Scanner</title>
-  <meta name="description" content="Offline-first receipt scanner for Alpha Construction Pros. Add receipts from the phone without connecting to a backend server." />
+  <meta name="description" content="Supabase-backed reimbursement receipt scanner for Toby and Brian." />
   <meta name="theme-color" content="#f8b84e" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Alpha Receipts" />
@@ -12,57 +12,80 @@
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <style>
-    :root { color-scheme: dark; --bg:#080b12; --card:#121826; --card2:#0d1320; --text:#f6f8fb; --muted:#aab4c3; --gold:#f8b84e; --line:#263044; --green:#32d583; --red:#fb7185; }
-    * { box-sizing: border-box; }
+    :root { color-scheme: dark; --bg:#080b12; --card:#121826; --text:#f6f8fb; --muted:#aab4c3; --gold:#f8b84e; --line:#263044; --green:#32d583; --red:#fb7185; }
+    * { box-sizing:border-box; }
     html, body { margin:0; min-height:100%; max-width:100%; overflow-x:hidden; }
-    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: radial-gradient(circle at top, #172036, var(--bg) 50%); color:var(--text); }
-    main { width:min(900px, 100%); margin:0 auto; padding: max(20px, env(safe-area-inset-top)) 14px max(40px, env(safe-area-inset-bottom)); }
+    body { font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:radial-gradient(circle at top, #172036, var(--bg) 50%); color:var(--text); }
+    main { width:min(1040px, 100%); margin:0 auto; padding:max(20px, env(safe-area-inset-top)) 14px max(44px, env(safe-area-inset-bottom)); }
     .hero { display:grid; gap:14px; margin-bottom:18px; }
     .badge { display:inline-flex; width:max-content; max-width:100%; gap:8px; align-items:center; padding:7px 11px; border:1px solid var(--line); border-radius:999px; color:var(--muted); background:rgba(255,255,255,.04); font-size:13px; }
-    h1 { font-size:clamp(32px, 10vw, 62px); line-height:.96; margin:0; letter-spacing:-.05em; }
+    h1 { font-size:clamp(32px, 10vw, 66px); line-height:.95; margin:0; letter-spacing:-.055em; }
+    h2 { margin:0 0 12px; font-size:22px; }
     p { color:var(--muted); line-height:1.5; }
     .status { border:1px solid rgba(50,213,131,.35); background:rgba(50,213,131,.08); color:#d1fae5; padding:12px 14px; border-radius:16px; margin:0; }
+    .status.bad { border-color:rgba(251,113,133,.45); background:rgba(251,113,133,.1); color:#fecdd3; }
     .grid { display:grid; grid-template-columns:1fr; gap:14px; }
-    @media (min-width: 760px) { .grid { grid-template-columns: 1fr 1fr; align-items:start; } }
-    .card { background:linear-gradient(180deg, rgba(18,24,38,.94), rgba(8,11,18,.96)); border:1px solid var(--line); border-radius:24px; padding:18px; box-shadow:0 24px 90px rgba(0,0,0,.34); }
-    .card h2 { margin:0 0 12px; font-size:22px; }
-    label { display:block; font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:14px 0 6px; }
+    @media (min-width: 860px) { .grid { grid-template-columns: minmax(320px,.85fr) 1.15fr; align-items:start; } }
+    .card { background:linear-gradient(180deg, rgba(18,24,38,.95), rgba(8,11,18,.97)); border:1px solid var(--line); border-radius:24px; padding:18px; box-shadow:0 24px 90px rgba(0,0,0,.34); }
+    label { display:block; font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:14px 0 6px; }
     input, select, textarea, button { width:100%; font:inherit; }
     input, select, textarea { background:#070b13; color:var(--text); border:1px solid var(--line); border-radius:14px; padding:13px 14px; outline:none; }
     input:focus, select:focus, textarea:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(248,184,78,.12); }
     button { border:0; border-radius:16px; min-height:52px; font-weight:900; cursor:pointer; }
+    button:disabled { opacity:.55; cursor:not-allowed; }
     .primary { background:linear-gradient(135deg, #ffd37a, var(--gold)); color:#111827; }
     .secondary { background:#172033; color:var(--text); border:1px solid var(--line); }
     .danger { background:rgba(251,113,133,.13); color:#fecdd3; border:1px solid rgba(251,113,133,.35); }
     .actions { display:grid; grid-template-columns:1fr; gap:10px; margin-top:14px; }
-    @media (min-width: 520px) { .actions { grid-template-columns:1fr 1fr; } }
-    .stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
-    .stat { background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:18px; padding:14px; }
-    .stat strong { display:block; font-size:28px; color:var(--gold); }
+    @media (min-width: 560px) { .actions { grid-template-columns:1fr 1fr; } }
+    .stats { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; margin:0 0 14px; }
+    @media (min-width: 680px) { .stats { grid-template-columns:repeat(4, minmax(0, 1fr)); } }
+    .stat { background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:18px; padding:14px; min-width:0; }
+    .stat span { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
+    .stat strong { display:block; font-size:clamp(22px, 6vw, 31px); color:var(--gold); overflow-wrap:anywhere; }
     #image-preview { width:100%; max-height:320px; object-fit:contain; border:1px solid var(--line); border-radius:18px; margin-top:12px; background:#030712; }
+    .filters { display:grid; grid-template-columns:1fr; gap:10px; margin:8px 0 14px; }
+    @media (min-width: 720px) { .filters { grid-template-columns:repeat(4, minmax(0, 1fr)); } }
     .receipt-card { display:grid; grid-template-columns:92px 1fr; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
     .receipt-card:last-child { border-bottom:0; }
     .receipt-card img, .no-photo { width:92px; height:92px; border-radius:14px; object-fit:cover; background:#050913; border:1px solid var(--line); }
     .no-photo { display:grid; place-items:center; color:var(--muted); font-size:12px; text-align:center; padding:8px; }
     .row { display:flex; justify-content:space-between; gap:8px; align-items:start; }
     .meta, .empty { color:var(--muted); font-size:14px; }
+    .pill { display:inline-flex; margin-top:6px; padding:5px 8px; border-radius:999px; background:#101827; border:1px solid var(--line); color:#cbd5e1; font-size:12px; }
+    .pill.good { border-color:rgba(50,213,131,.4); color:#bbf7d0; background:rgba(50,213,131,.08); }
     .delete { width:auto; min-height:34px; margin-top:8px; padding:8px 10px; background:rgba(251,113,133,.12); color:#fecdd3; border:1px solid rgba(251,113,133,.28); }
     .help { font-size:14px; color:#d7dfeb; background:rgba(248,184,78,.08); border-left:4px solid var(--gold); padding:12px; border-radius:14px; }
+    [hidden] { display:none !important; }
   </style>
 </head>
 <body>
 <main>
   <section class="hero">
-    <span class="badge">Alpha Construction Pros · phone receipt capture</span>
+    <span class="badge">Alpha Construction Pros · Supabase receipt reimbursement</span>
     <h1>Alpha Receipt Scanner</h1>
     <p class="status" id="sync-status">Loading scanner...</p>
-    <p>This is now a Vercel-hosted installable web app. It saves receipts on the phone first. No setup screen, no LAN URL, no tunnel required to add receipts at a gas station.</p>
+    <p>Shared receipt capture for Toby and Brian. Receipts save to Supabase, totals split by person, and payday export gives Cassandra/wife a clean reimbursement CSV.</p>
     <button class="secondary" id="install-app" hidden type="button">Install / Add to Home Screen</button>
   </section>
 
-  <section class="grid">
+  <form class="card" id="access-form" hidden>
+    <h2>Team access</h2>
+    <p>Enter the Alpha receipt access code once. It stays on this phone so Toby and Brian can both submit receipts.</p>
+    <label for="access-code">Access code</label>
+    <input id="access-code" type="password" autocomplete="current-password" required />
+    <button class="primary" type="submit">Unlock Receipts</button>
+  </form>
+
+  <section id="app-shell" class="grid" hidden>
     <form class="card" id="receipt-form">
       <h2>Add receipt</h2>
+      <label for="purchaser">Who paid?</label>
+      <select id="purchaser" name="purchaser" required>
+        <option>Toby</option>
+        <option>Brian</option>
+      </select>
+
       <label for="receipt-image">Receipt photo</label>
       <input id="receipt-image" name="image" type="file" accept="image/*" capture="environment" />
       <img id="image-preview" alt="Receipt preview" hidden />
@@ -74,11 +97,11 @@
       <input id="amount" name="amount" type="number" step="0.01" min="0" inputmode="decimal" placeholder="23.41" required />
 
       <label for="receipt-date">Date</label>
-      <input id="receipt-date" name="date" type="date" required />
+      <input id="receipt-date" name="receipt_date" type="date" required />
 
       <label for="category">Category</label>
       <select id="category" name="category">
-        <option>Fuel</option>
+        <option>Gas</option>
         <option>Materials</option>
         <option>Tools</option>
         <option>Food</option>
@@ -87,22 +110,38 @@
         <option>Other</option>
       </select>
 
-      <label for="notes">Notes</label>
-      <textarea id="notes" name="notes" rows="3" placeholder="Job, customer, material, truck, or reason"></textarea>
+      <label for="reimbursement-type">Reimbursement status</label>
+      <select id="reimbursement-type" name="reimbursement_type">
+        <option>Reimbursable</option>
+        <option>Company Card</option>
+        <option>Personal/Non-Reimbursable</option>
+      </select>
 
-      <button class="primary" type="submit">Save Receipt</button>
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="notes" rows="3" placeholder="Job, customer, vehicle, material, or reason"></textarea>
+
+      <button class="primary" type="submit">Save to Supabase</button>
     </form>
 
     <section class="card">
-      <h2>Saved on this phone</h2>
+      <h2>Payday totals</h2>
+      <div class="filters">
+        <div><label for="filter-purchaser">Person</label><select id="filter-purchaser"><option value="">Toby + Brian</option><option>Toby</option><option>Brian</option></select></div>
+        <div><label for="filter-start">Start</label><input id="filter-start" type="date" /></div>
+        <div><label for="filter-end">End</label><input id="filter-end" type="date" /></div>
+        <div><label for="filter-type">Type</label><select id="filter-type"><option value="">All</option><option>Reimbursable</option><option>Company Card</option><option>Personal/Non-Reimbursable</option></select></div>
+      </div>
       <div class="stats">
         <div class="stat"><span>Receipts</span><strong id="receipt-count">0</strong></div>
-        <div class="stat"><span>Total</span><strong id="receipt-total">$0.00</strong></div>
+        <div class="stat"><span>All spend</span><strong id="all-total">$0.00</strong></div>
+        <div class="stat"><span>Toby reimb.</span><strong id="toby-total">$0.00</strong></div>
+        <div class="stat"><span>Brian reimb.</span><strong id="brian-total">$0.00</strong></div>
       </div>
-      <p class="help">Use Export CSV anytime. Photos stay in this browser’s local storage. Do not clear site data until exported.</p>
+      <div class="stat" style="margin-bottom:14px"><span>Combined reimbursable</span><strong id="reimbursable-total">$0.00</strong></div>
+      <p class="help">Export CSV uses the current filters. It includes separate Toby/Brian reimbursement totals at the top for payday.</p>
       <div class="actions">
-        <button class="secondary" id="export-csv" type="button">Export CSV</button>
-        <button class="danger" id="clear-all" type="button">Clear Phone Data</button>
+        <button class="secondary" id="refresh-data" type="button">Refresh Supabase</button>
+        <button class="primary" id="export-csv" type="button">Export Payday CSV</button>
       </div>
       <div id="receipt-list" aria-live="polite"></div>
     </section>

@@ -30,7 +30,6 @@ import 'package:receipt_wrangler_mobile/search/nav/search_app_bar.dart';
 import 'package:receipt_wrangler_mobile/search/screens/search_screen.dart';
 import 'package:receipt_wrangler_mobile/search/widgets/searchbar.dart';
 import 'package:receipt_wrangler_mobile/services/token_refresh_service.dart';
-import 'package:receipt_wrangler_mobile/shared/widgets/circular_loading_progress.dart';
 import 'package:receipt_wrangler_mobile/shared/widgets/screen_wrapper.dart';
 import 'package:receipt_wrangler_mobile/utils/permissions.dart';
 
@@ -189,7 +188,6 @@ class ReceiptWrangler extends StatefulWidget {
 class _ReceiptWrangler extends State<ReceiptWrangler> {
   late final AppLifecycleListener _lifecycleListener;
   Timer? _refreshTimer;
-  late Future<bool> _initFuture;
   bool _initialized = false;
 
   // GoRouter held per-State instance so each `pumpWidget(buildApp())` in
@@ -200,8 +198,7 @@ class _ReceiptWrangler extends State<ReceiptWrangler> {
   late final authModel = Provider.of<AuthModel>(context, listen: false);
   late final groupModel = Provider.of<GroupModel>(context, listen: false);
   late final userModel = Provider.of<UserModel>(context, listen: false);
-  late final categoryModel =
-      Provider.of<CategoryModel>(context, listen: false);
+  late final categoryModel = Provider.of<CategoryModel>(context, listen: false);
   late final tagModel = Provider.of<TagModel>(context, listen: false);
   late final systemSettingsModel =
       Provider.of<SystemSettingsModel>(context, listen: false);
@@ -245,7 +242,7 @@ class _ReceiptWrangler extends State<ReceiptWrangler> {
         systemSettingsModel: systemSettingsModel,
       );
 
-      _initFuture = TokenRefreshService().refreshTokens();
+      unawaited(TokenRefreshService().refreshTokens());
 
       _refreshTimer =
           Timer.periodic(const Duration(minutes: 15), (timer) async {
@@ -295,16 +292,7 @@ class _ReceiptWrangler extends State<ReceiptWrangler> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _initFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          return _buildMaterialApp();
-        }
-
-        return const CircularLoadingProgress();
-      },
-    );
+    return _buildMaterialApp();
   }
 
   // Listen to the app lifecycle state changes

@@ -24,7 +24,8 @@ class AuthModel extends ChangeNotifier {
   final _basePathKey = "basePath";
 
   String get basePath =>
-      GlobalSharedPreferences.instance.getString(_basePathKey) ?? "";
+      GlobalSharedPreferences.instance.getString(_basePathKey) ??
+      "http://192.168.12.209:18080";
 
   api.FeatureConfig _featureConfig = (api.FeatureConfigBuilder()
         ..aiPoweredReceipts = false

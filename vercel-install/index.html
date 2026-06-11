@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Alpha Receipt Scanner Install</title>
+  <meta name="description" content="Install the Alpha Receipt Scanner Android app and connect it to the receipt server." />
+  <style>
+    :root { color-scheme: dark; --bg:#080b12; --card:#121826; --text:#f6f8fb; --muted:#aab4c3; --gold:#f8b84e; --line:#263044; --green:#32d583; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: radial-gradient(circle at top, #172036, var(--bg) 52%); color:var(--text); }
+    main { min-height:100vh; display:grid; place-items:center; padding:28px 16px; }
+    .wrap { width:min(760px, 100%); }
+    .badge { display:inline-flex; gap:8px; align-items:center; padding:7px 11px; border:1px solid var(--line); border-radius:999px; color:var(--muted); background:rgba(255,255,255,.04); font-size:14px; }
+    h1 { font-size:clamp(34px, 8vw, 62px); line-height:.96; margin:18px 0 12px; letter-spacing:-.05em; }
+    p { color:var(--muted); font-size:18px; line-height:1.55; }
+    .card { margin-top:24px; background:rgba(18,24,38,.88); border:1px solid var(--line); border-radius:24px; padding:22px; box-shadow:0 24px 90px rgba(0,0,0,.35); }
+    .download { display:block; text-align:center; text-decoration:none; color:#111827; background:linear-gradient(135deg, #ffd37a, var(--gold)); font-weight:900; font-size:20px; border-radius:18px; padding:18px 20px; margin:10px 0 18px; }
+    .grid { display:grid; grid-template-columns:1fr; gap:12px; }
+    .item { border:1px solid var(--line); border-radius:16px; padding:14px; background:rgba(255,255,255,.035); }
+    .label { color:var(--muted); font-size:13px; text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; }
+    code { display:block; overflow-wrap:anywhere; color:var(--green); font-size:16px; }
+    ol { color:var(--text); line-height:1.7; padding-left:22px; }
+    .warn { border-left:4px solid var(--gold); padding:12px 14px; background:rgba(248,184,78,.09); border-radius:12px; color:#f8e2b5; }
+    footer { margin-top:16px; color:var(--muted); font-size:13px; text-align:center; }
+  </style>
+</head>
+<body>
+<main>
+  <section class="wrap">
+    <div class="badge">Alpha Construction Pros · Receipt scanner test build</div>
+    <h1>Install Alpha Receipt Scanner</h1>
+    <p>Download the Android APK, install it on the phone, then log in and scan gas, food, supplies, and material receipts.</p>
+    <div class="card">
+      <a class="download" href="https://github.com/tobymilleragency-lgtm/alpha-receipt-scanner/releases/latest/download/alpha-receipt-scanner-debug.apk">Download Android APK</a>
+      <div class="grid">
+        <div class="item"><div class="label">Server URL</div><code>http://192.168.12.209:18080</code></div>
+        <div class="item"><div class="label">Username</div><code>toby</code></div>
+        <div class="item"><div class="label">Password</div><code>alpha123</code></div>
+        <div class="item"><div class="label">APK SHA-256</div><code>dc7381897b642fd687261b8e06030d0058caded78b71267d49790b546a454317</code></div>
+      </div>
+      <ol>
+        <li>Open this page on the Android phone.</li>
+        <li>Tap <strong>Download Android APK</strong>.</li>
+        <li>If Android blocks it, allow install from browser/downloads for this test build.</li>
+        <li>Open <strong>Alpha Receipt Scanner</strong>.</li>
+        <li>Use the server/login above.</li>
+        <li>Tap the add/plus menu and use <strong>Quick Scan</strong>, or open a receipt and use <strong>Upload from Camera</strong>.</li>
+      </ol>
+      <p class="warn">Vercel hosts this install page. The receipt backend is still the running Docker server at Toby's workstation LAN address above, not Vercel.</p>
+    </div>
+    <footer>Debug build for Alpha internal testing.</footer>
+  </section>
+</main>
+</body>
+</html>

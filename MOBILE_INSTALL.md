@@ -16,15 +16,30 @@ The mobile app has these scanner entry points in code:
 A debug Android APK was built successfully here:
 
 ```text
+/home/toby/alpha-receipt-scanner/dist/alpha-receipt-scanner-debug.apk
+```
+
+Source build output:
+
+```text
 /home/toby/alpha-receipt-scanner/mobile/build/app/outputs/flutter-apk/app-debug.apk
 ```
 
 Build verification:
 
 ```text
-size: 164608721 bytes
-sha256: 7d7cf92192f824d47891949ceef71056c7177542433024b2b6bc1910ea7619a2
+size: 164608037 bytes
+sha256: dc7381897b642fd687261b8e06030d0058caded78b71267d49790b546a454317
 ```
+
+## Fixes applied
+
+- Changed Android app label to `Alpha Receipt Scanner`.
+- Allowed cleartext HTTP traffic so the phone can talk to the local LAN server at `http://192.168.12.209:18080` during testing.
+- Set the app default home-server URL to `http://192.168.12.209:18080`.
+- Removed the startup token-refresh loading gate that could keep the app stuck before the login/home-server screen.
+- Set Android NDK to `28.2.13676358`, matching the scanner/integration-test dependency requirement.
+- Added `build-mobile-apk.sh` so the APK can be rebuilt cleanly from Docker and copied to `dist/`.
 
 ## Local server for phone testing
 
@@ -34,24 +49,10 @@ The local web/API server is running at:
 http://127.0.0.1:18080/
 ```
 
-For a phone on the same Wi-Fi, `127.0.0.1` will point to the phone itself, not Toby's workstation. Use the workstation LAN IP instead.
-
-Get LAN IP:
-
-```bash
-hostname -I
-```
-
-Then in the mobile app home-server field, use:
+For a phone on the same Wi-Fi, `127.0.0.1` will point to the phone itself, not Toby's workstation. Use the workstation LAN IP instead:
 
 ```text
-http://<WORKSTATION_LAN_IP>:18080
-```
-
-Example:
-
-```text
-http://192.168.1.50:18080
+http://192.168.12.209:18080
 ```
 
 ## Test login
@@ -71,12 +72,15 @@ Once logged in on phone:
 
 If `Quick Scan` is not visible, it is because the app only shows it when `aiPoweredReceipts` is enabled. The camera upload path still exists on receipt image/form screens.
 
-## Build command used
+## Build command
 
 ```bash
-docker run --rm \
-  -v /home/toby/alpha-receipt-scanner/mobile:/work \
-  -w /work \
-  ghcr.io/cirruslabs/flutter:stable \
-  bash -lc 'flutter pub get && flutter build apk --debug'
+cd /home/toby/alpha-receipt-scanner
+./build-mobile-apk.sh
+```
+
+The script uses Docker with persistent Flutter/Gradle caches under `/data/toby/ai-workbench/cache/` and copies the built APK to:
+
+```text
+/home/toby/alpha-receipt-scanner/dist/alpha-receipt-scanner-debug.apk
 ```

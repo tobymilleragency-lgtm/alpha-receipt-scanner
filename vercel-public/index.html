@@ -56,6 +56,8 @@
     .pill.good { border-color:rgba(50,213,131,.4); color:#bbf7d0; background:rgba(50,213,131,.08); }
     .delete { width:auto; min-height:34px; margin-top:8px; padding:8px 10px; background:rgba(251,113,133,.12); color:#fecdd3; border:1px solid rgba(251,113,133,.28); }
     .help { font-size:14px; color:#d7dfeb; background:rgba(248,184,78,.08); border-left:4px solid var(--gold); padding:12px; border-radius:14px; }
+    .ai-box { margin-top:12px; padding:12px; border:1px solid rgba(248,184,78,.35); background:rgba(248,184,78,.08); border-radius:16px; color:#fef3c7; font-size:14px; line-height:1.45; }
+    .ai-box.bad { border-color:rgba(251,113,133,.45); background:rgba(251,113,133,.1); color:#fecdd3; }
     [hidden] { display:none !important; }
   </style>
 </head>
@@ -89,6 +91,8 @@
       <label for="receipt-image">Receipt photo</label>
       <input id="receipt-image" name="image" type="file" accept="image/*" capture="environment" />
       <img id="image-preview" alt="Receipt preview" hidden />
+      <div class="ai-box" id="ai-result" hidden></div>
+      <button class="secondary" id="scan-ai" type="button" disabled>Scan receipt with AI</button>
 
       <label for="vendor">Vendor / store</label>
       <input id="vendor" name="vendor" placeholder="Casey's, Lowe's, Home Depot" required />

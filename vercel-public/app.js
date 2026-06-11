@@ -20,6 +20,8 @@ const preview = $('#image-preview');
 const exportBtn = $('#export-csv');
 const refreshBtn = $('#refresh-data');
 const installBtn = $('#install-app');
+const scanAiBtn = $('#scan-ai');
+const aiResult = $('#ai-result');
 const accessForm = $('#access-form');
 const appShell = $('#app-shell');
 const accessInput = $('#access-code');
@@ -111,6 +113,49 @@ function setStatus(message, ok = true) {
   statusEl.classList.toggle('bad', !ok);
 }
 
+function setAiResult(message, ok = true) {
+  aiResult.textContent = message;
+  aiResult.hidden = !message;
+  aiResult.classList.toggle('bad', !ok);
+}
+
+function fillReceiptFields(receipt) {
+  if (receipt.vendor) $('#vendor').value = receipt.vendor;
+  if (receipt.amount) $('#amount').value = Number(receipt.amount).toFixed(2);
+  if (receipt.receipt_date) $('#receipt-date').value = receipt.receipt_date;
+  if (receipt.category) $('#category').value = receipt.category;
+  if (receipt.reimbursement_type) $('#reimbursement-type').value = receipt.reimbursement_type;
+  const existingNotes = $('#notes').value.trim();
+  const aiNote = receipt.notes ? `AI note: ${receipt.notes}` : '';
+  if (aiNote && !existingNotes) $('#notes').value = aiNote;
+}
+
+async function analyzeReceiptPhoto() {
+  if (!state.imageDataUrl || state.loading) return;
+  state.loading = true;
+  scanAiBtn.disabled = true;
+  setAiResult('AI is reading the receipt photo...');
+  setStatus('Scanning receipt with Gemini vision...');
+  try {
+    const data = await api('/api/analyze-receipt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image_data_url: state.imageDataUrl }),
+    });
+    const receipt = data.receipt || {};
+    fillReceiptFields(receipt);
+    const confidence = Math.round(Number(receipt.confidence || 0) * 100);
+    setAiResult(`AI filled the receipt fields. Review before saving. Confidence: ${confidence || 'unknown'}%. Model: ${data.model || 'vision AI'}.`);
+    setStatus('AI filled the blanks. Review the fields, then save to Supabase.');
+  } catch (error) {
+    setAiResult(error.message || 'AI could not read this receipt. Enter it manually.', false);
+    setStatus('AI scan failed. Manual entry is still available.', false);
+  } finally {
+    state.loading = false;
+    scanAiBtn.disabled = !state.imageDataUrl;
+  }
+}
+
 async function loadReceipts() {
   if (!getAccessCode()) {
     appShell.hidden = true;
@@ -167,10 +212,14 @@ fileInput.addEventListener('change', async () => {
     state.imageDataUrl = await resizeImage(file);
     preview.src = state.imageDataUrl;
     preview.hidden = false;
-    setStatus('Photo ready. Saving will upload it to Supabase.');
+    scanAiBtn.disabled = false;
+    setStatus('Photo ready. AI is reading it now...');
+    void analyzeReceiptPhoto();
   } catch (error) {
     state.imageDataUrl = '';
     preview.hidden = true;
+    scanAiBtn.disabled = true;
+    setAiResult('');
     setStatus(error.message || 'Photo failed.', false);
   }
 });
@@ -202,6 +251,8 @@ form.addEventListener('submit', async event => {
     $('#receipt-date').value = new Date().toISOString().slice(0, 10);
     state.imageDataUrl = '';
     preview.hidden = true;
+    scanAiBtn.disabled = true;
+    setAiResult('');
     setStatus('Saved to Supabase. Ready for reimbursement export.');
     await loadReceipts();
   } catch (error) {
@@ -232,6 +283,7 @@ exportBtn.addEventListener('click', () => {
 });
 
 refreshBtn.addEventListener('click', () => void loadReceipts());
+scanAiBtn.addEventListener('click', () => void analyzeReceiptPhoto());
 ['#filter-purchaser', '#filter-start', '#filter-end', '#filter-type'].forEach(selector => {
   $(selector).addEventListener('change', () => void loadReceipts());
 });
